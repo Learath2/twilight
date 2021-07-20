@@ -19,6 +19,7 @@ rand = { default-features = false, features = ["std_rng", "std"], version = "0.8
 hyper = { default-features = false, features = ["client", "http1", "http2", "runtime"], version = "0.14" }
 hyper-rustls = { default-features = false, optional = true, version = "0.22" }
 hyper-tls = { default-features = false, optional = true, version = "0.5" }
+hyper-proxy = "0.9.1"
 percent-encoding = { default-features = false, version = "2" }
 tokio = { default-features = false, features = ["time"], version = "1.0" }
 twilight-model = { default-features = false, path = "../model" }

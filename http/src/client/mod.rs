@@ -32,6 +32,7 @@ use hyper::{
     header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE, USER_AGENT},
     Body, Response, StatusCode,
 };
+use hyper_proxy::ProxyConnector;
 use serde::de::DeserializeOwned;
 use std::{
     convert::TryFrom,
@@ -62,7 +63,7 @@ type HttpsConnector<T> = hyper_rustls::HttpsConnector<T>;
 type HttpsConnector<T> = hyper_tls::HttpsConnector<T>;
 
 struct State {
-    http: HyperClient<HttpsConnector<HttpConnector>, Body>,
+    http: HyperClient<ProxyConnector<HttpsConnector<HttpConnector>>, Body>,
     default_headers: Option<HeaderMap>,
     proxy: Option<Box<str>>,
     ratelimiter: Option<Ratelimiter>,
@@ -2276,6 +2277,8 @@ impl Client {
             }
         };
 
+        #[cfg(feature = "tracing")]
+        tracing::debug!("rl bucket: {:?}", bucket);
         let rx = ratelimiter.get(bucket).await;
         let tx = rx.await.map_err(|source| Error {
             kind: ErrorType::RequestCanceled,

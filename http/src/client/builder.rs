@@ -1,6 +1,7 @@
 use super::{Client, State};
 use crate::ratelimiting::Ratelimiter;
-use hyper::header::HeaderMap;
+use hyper::{header::HeaderMap};
+use hyper_proxy::{Intercept, Proxy, ProxyConnector};
 use std::{
     sync::{
         atomic::{AtomicBool, AtomicU64, Ordering},
@@ -42,7 +43,14 @@ impl ClientBuilder {
         ))]
         let connector = hyper_tls::HttpsConnector::new();
 
-        let http = hyper::client::Builder::default().build(connector);
+        let proxy = {
+            let proxy_uri = "http://localhost:8080".parse().unwrap();
+            let proxy = Proxy::new(Intercept::All, proxy_uri);
+            let proxy_connector = ProxyConnector::from_proxy(connector, proxy).unwrap();
+            proxy_connector
+        };
+
+        let http = hyper::client::Builder::default().build(proxy);
 
         Client {
             state: Arc::new(State {
